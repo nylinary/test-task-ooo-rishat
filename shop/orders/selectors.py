@@ -33,8 +33,15 @@ def order_get(*, order_id: int) -> Order:
 
 def order_totals(*, order: Order) -> OrderTotals:
     """
-    Money math for an order, mirroring how Stripe computes a Checkout Session:
-    the discount is applied to the subtotal first, the tax rate afterwards.
+    Money math for an order, following Stripe's order of operations: the
+    discount is applied to the subtotal first, the tax rate afterwards, and
+    inclusive taxes are only broken out of the price.
+
+    One caveat: Stripe Checkout allocates coupon and tax amounts per line item
+    in integer minor units, while this computes on the aggregated subtotal -
+    for multi-line orders whose per-line amounts land on fractional cents the
+    results can differ by a cent. Fine for this test task; a real system would
+    reconcile against the amounts Stripe reports.
     """
     currency = order.currency
     subtotal = quantize_money(
