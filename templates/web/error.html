@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Something went wrong{% endblock %}
+
+{% block content %}
+  <section class="panel">
+    <h1>Something went wrong</h1>
+    <p class="alert alert--error">{{ message }}</p>
+    <a class="button" href="{% url 'web:index' %}">Back to the shop</a>
+  </section>
+{% endblock %}

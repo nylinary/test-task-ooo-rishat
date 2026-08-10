@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% load money %}
+
+{% block title %}Pay order #{{ order.id }}{% endblock %}
+
+{% block content %}
+  <a class="back" href="{% url 'web:index' %}">&larr; All items</a>
+
+  <section class="panel">
+    <div class="card__head">
+      <h1>Order #{{ order.id }}</h1>
+      <span class="badge">{{ totals.currency|upper }}</span>
+    </div>
+
+    {% if order.customer_email %}
+      <p class="muted">for {{ order.customer_email }}</p>
+    {% endif %}
+
+    <table class="table">
+      <thead>
+        <tr><th>Item</th><th class="right">Price</th><th class="right">Qty</th><th class="right">Amount</th></tr>
+      </thead>
+      <tbody>
+        {% for order_item in order.order_items.all %}
+          <tr>
+            <td>{{ order_item.item.name }}</td>
+            <td class="right">{{ order_item.item.price|money:totals.currency }}</td>
+            <td class="right">{{ order_item.quantity }}</td>
+            <td class="right">{{ order_item.amount|money:totals.currency }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="3">Subtotal</td>
+          <td class="right">{{ totals.subtotal|money:totals.currency }}</td>
+        </tr>
+        {% if order.applied_discount %}
+          <tr>
+            <td colspan="3">{{ order.applied_discount.name }} (&minus;{{ order.applied_discount.percent_off }}%)</td>
+            <td class="right">&minus;{{ totals.discount_amount|money:totals.currency }}</td>
+          </tr>
+        {% endif %}
+        {% if order.applied_tax %}
+          <tr>
+            <td colspan="3">
+              {{ order.applied_tax.name }} ({{ order.applied_tax.percentage }}%{% if order.applied_tax.is_inclusive %}, incl.{% endif %})
+            </td>
+            <td class="right">{{ totals.tax_amount|money:totals.currency }}</td>
+          </tr>
+        {% endif %}
+        <tr class="total">
+          <td colspan="3">Total</td>
+          <td class="right">{{ totals.total|money:totals.currency }}</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    {% if stripe_error %}
+      <p class="alert alert--error">{{ stripe_error }}</p>
+    {% else %}
+      <div class="actions">
+        <button id="checkout-button" class="button button--primary">Pay with Stripe Checkout</button>
+        <button id="payment-intent-button" class="button">Pay here (Payment Intent)</button>
+      </div>
+
+      <form id="payment-form" class="payment-form" hidden>
+        <div id="payment-element"></div>
+        <button id="payment-submit" class="button button--primary" type="submit">Pay {{ totals.total|money:totals.currency }}</button>
+      </form>
+    {% endif %}
+
+    <p id="payment-error" class="alert alert--error" hidden></p>
+  </section>
+{% endblock %}
+
+{% block scripts %}
+  {% if not stripe_error %}
+    {% url 'payments:order-checkout-session' order.id as checkout_url %}
+    {% url 'payments:order-payment-intent' order.id as payment_intent_url %}
+    {% url 'web:payment-success' as success_url %}
+    {{ stripe_publishable_key|json_script:"publishable-key" }}
+    {{ checkout_url|json_script:"checkout-url" }}
+    {{ payment_intent_url|json_script:"payment-intent-url" }}
+    {{ success_url|json_script:"success-url" }}
+
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+      const readJSON = (id) => JSON.parse(document.getElementById(id).textContent);
+
+      const stripe = Stripe(readJSON("publishable-key"));
+      const checkoutUrl = readJSON("checkout-url");
+      const paymentIntentUrl = readJSON("payment-intent-url");
+      const returnUrl = window.location.origin + readJSON("success-url");
+
+      const checkoutButton = document.getElementById("checkout-button");
+      const paymentIntentButton = document.getElementById("payment-intent-button");
+      const paymentForm = document.getElementById("payment-form");
+      const paymentSubmit = document.getElementById("payment-submit");
+      const errorBox = document.getElementById("payment-error");
+
+      const showError = (message) => {
+        errorBox.textContent = message;
+        errorBox.hidden = false;
+      };
+
+      const requestJSON = async (url) => {
+        const response = await fetch(url, { method: "GET" });
+        const payload = await response.json();
+
+        if (!response.ok) {
+          throw new Error(payload.message || "Could not start the payment.");
+        }
+
+        return payload;
+      };
+
+      // Option 1: hosted Stripe Checkout, with the discount and the tax passed
+      // to Stripe as a Coupon and a Tax Rate.
+      checkoutButton.addEventListener("click", async () => {
+        checkoutButton.disabled = true;
+        errorBox.hidden = true;
+
+        try {
+          const session = await requestJSON(checkoutUrl);
+
+          if (typeof stripe.redirectToCheckout === "function") {
+            const { error } = await stripe.redirectToCheckout({ sessionId: session.id });
+
+            if (error) {
+              throw new Error(error.message);
+            }
+          } else {
+            window.location.href = session.url;
+          }
+        } catch (error) {
+          showError(error.message);
+          checkoutButton.disabled = false;
+        }
+      });
+
+      // Option 2: Payment Intent + Payment Element, paid without leaving the page.
+      let elements = null;
+
+      paymentIntentButton.addEventListener("click", async () => {
+        paymentIntentButton.disabled = true;
+        errorBox.hidden = true;
+
+        try {
+          const paymentIntent = await requestJSON(paymentIntentUrl);
+
+          elements = stripe.elements({ clientSecret: paymentIntent.client_secret });
+          elements.create("payment").mount("#payment-element");
+
+          paymentForm.hidden = false;
+          paymentIntentButton.hidden = true;
+          checkoutButton.disabled = true;
+        } catch (error) {
+          showError(error.message);
+          paymentIntentButton.disabled = false;
+        }
+      });
+
+      paymentForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        paymentSubmit.disabled = true;
+        errorBox.hidden = true;
+
+        const { error } = await stripe.confirmPayment({
+          elements,
+          confirmParams: { return_url: returnUrl },
+        });
+
+        // Only reached when the payment could not be confirmed - otherwise the
+        // browser has already been redirected to `return_url`.
+        showError(error.message);
+        paymentSubmit.disabled = false;
+      });
+    </script>
+  {% endif %}
+{% endblock %}

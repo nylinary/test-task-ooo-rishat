@@ -26,4 +26,37 @@
       {% endfor %}
     </div>
   </section>
+
+  <section>
+    <h1>Orders</h1>
+    <p class="muted">An order groups several items and can carry a discount and a tax.</p>
+
+    <div class="grid">
+      {% for row in orders %}
+        <article class="card">
+          <div class="card__head">
+            <h2 class="card__title">Order #{{ row.order.id }}</h2>
+            {% if row.totals %}<span class="badge">{{ row.totals.currency|upper }}</span>{% endif %}
+          </div>
+          <p class="card__text">
+            {% for order_item in row.order.order_items.all %}
+              {{ order_item.item.name }} &times;{{ order_item.quantity }}{% if not forloop.last %}, {% endif %}
+            {% empty %}
+              Empty order
+            {% endfor %}
+          </p>
+          <div class="card__foot">
+            {% if row.totals %}
+              <span class="price">{{ row.totals.total|money:row.totals.currency }}</span>
+            {% else %}
+              <span class="error-text">{{ row.error }}</span>
+            {% endif %}
+            <a class="button" href="{% url 'web:order-detail' row.order.id %}">Open</a>
+          </div>
+        </article>
+      {% empty %}
+        <p class="muted">No orders yet &mdash; create one in the <a href="{% url 'admin:orders_order_changelist' %}">admin</a>.</p>
+      {% endfor %}
+    </div>
+  </section>
 {% endblock %}
