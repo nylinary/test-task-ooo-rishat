@@ -166,14 +166,21 @@
         paymentSubmit.disabled = true;
         errorBox.hidden = true;
 
-        const { error } = await stripe.confirmPayment({
-          elements,
-          confirmParams: { return_url: returnUrl },
-        });
+        try {
+          const { error } = await stripe.confirmPayment({
+            elements,
+            confirmParams: { return_url: returnUrl },
+          });
 
-        // Only reached when the payment could not be confirmed - otherwise the
-        // browser has already been redirected to `return_url`.
-        showError(error.message);
+          // Only reached when the payment could not be confirmed - otherwise
+          // the browser has already been redirected to `return_url`.
+          if (error) {
+            showError(error.message);
+          }
+        } catch (error) {
+          showError(error.message);
+        }
+
         paymentSubmit.disabled = false;
       });
     </script>

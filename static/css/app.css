@@ -17,6 +17,12 @@
   box-sizing: border-box;
 }
 
+/* Keep the `hidden` attribute working on elements whose class sets a display
+   value (author rules beat the UA's `[hidden] { display: none }`). */
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
