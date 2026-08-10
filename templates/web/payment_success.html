@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Payment complete{% endblock %}
+
+{% block content %}
+  <section class="panel">
+    <h1>Thanks! Your test payment went through.</h1>
+    <p class="muted">
+      No webhooks are configured in this test task, so nothing is stored on our side &mdash;
+      the payment itself is visible in the Stripe dashboard.
+    </p>
+
+    <dl class="details">
+      {% if session_id %}
+        <dt>Checkout Session</dt>
+        <dd><code>{{ session_id }}</code></dd>
+      {% endif %}
+      {% if payment_intent_id %}
+        <dt>Payment Intent</dt>
+        <dd><code>{{ payment_intent_id }}</code></dd>
+      {% endif %}
+      {% if redirect_status %}
+        <dt>Status</dt>
+        <dd><code>{{ redirect_status }}</code></dd>
+      {% endif %}
+    </dl>
+
+    <a class="button" href="{% url 'web:index' %}">Back to the shop</a>
+  </section>
+{% endblock %}

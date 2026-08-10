@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load money %}
+
+{% block title %}Stripe Shop{% endblock %}
+
+{% block content %}
+  <section>
+    <h1>Items</h1>
+    <p class="muted">Every item is priced in its own currency and is paid for with the matching Stripe keypair.</p>
+
+    <div class="grid">
+      {% for item in items %}
+        <article class="card">
+          <div class="card__head">
+            <h2 class="card__title">{{ item.name }}</h2>
+            <span class="badge">{{ item.currency|upper }}</span>
+          </div>
+          <p class="card__text">{{ item.description|default:"&mdash;" }}</p>
+          <div class="card__foot">
+            <span class="price">{{ item.price|money:item.currency }}</span>
+            <a class="button" href="{% url 'web:item-detail' item.id %}">Open</a>
+          </div>
+        </article>
+      {% empty %}
+        <p class="muted">No items yet &mdash; add some in the <a href="{% url 'admin:catalog_item_changelist' %}">admin</a>.</p>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

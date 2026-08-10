@@ -1,0 +1,29 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Stripe Shop{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{% url 'web:index' %}">Stripe&nbsp;Shop</a>
+    <nav class="topbar__nav">
+      <span class="badge badge--test">Stripe test mode</span>
+      <a href="{% url 'admin:index' %}">Admin</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    Django&nbsp;+&nbsp;Stripe test task &middot; use the test card <code>4242 4242 4242 4242</code>
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>
