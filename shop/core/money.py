@@ -1,6 +1,9 @@
+from collections.abc import Iterable
 from decimal import ROUND_HALF_UP, Decimal
 
 from django.db import models
+
+from shop.core.exceptions import ApplicationError
 
 MONEY_QUANTUM = Decimal("0.01")
 
@@ -51,3 +54,22 @@ def to_minor_units(amount: Decimal, currency: str) -> int:
         return int(amount.quantize(Decimal("1"), rounding=ROUND_HALF_UP))
 
     return int((amount * 100).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+
+
+def resolve_single_currency(currencies: Iterable[str]) -> str:
+    """
+    A payment happens in exactly one currency, so a set of items that is paid
+    for together has to agree on it.
+    """
+    distinct = set(currencies)
+
+    if not distinct:
+        raise ApplicationError("There are no items to determine the currency from.")
+
+    if len(distinct) > 1:
+        raise ApplicationError(
+            "All items must share the same currency to be paid for together.",
+            extra={"currencies": sorted(distinct)},
+        )
+
+    return distinct.pop()
