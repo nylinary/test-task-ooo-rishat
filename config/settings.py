@@ -134,6 +134,29 @@ REST_FRAMEWORK = {
 }
 
 # ---------------------------------------------------------------------------
+# Stripe
+#
+# One keypair per supported currency: the currency of an `Item` decides which
+# Stripe account (and therefore which publishable key on the frontend) is used.
+# Both currencies fall back to a single default keypair, so the project also
+# runs with just `STRIPE_PUBLISHABLE_KEY` / `STRIPE_SECRET_KEY` set.
+# ---------------------------------------------------------------------------
+
+STRIPE_PUBLISHABLE_KEY = env.str("STRIPE_PUBLISHABLE_KEY", default="")
+STRIPE_SECRET_KEY = env.str("STRIPE_SECRET_KEY", default="")
+
+STRIPE_ACCOUNTS = {
+    "usd": {
+        "publishable_key": env.str("STRIPE_USD_PUBLISHABLE_KEY", default=STRIPE_PUBLISHABLE_KEY),
+        "secret_key": env.str("STRIPE_USD_SECRET_KEY", default=STRIPE_SECRET_KEY),
+    },
+    "eur": {
+        "publishable_key": env.str("STRIPE_EUR_PUBLISHABLE_KEY", default=STRIPE_PUBLISHABLE_KEY),
+        "secret_key": env.str("STRIPE_EUR_SECRET_KEY", default=STRIPE_SECRET_KEY),
+    },
+}
+
+# ---------------------------------------------------------------------------
 # Logging
 # ---------------------------------------------------------------------------
 
