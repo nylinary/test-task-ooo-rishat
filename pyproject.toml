@@ -23,7 +23,51 @@ dev = [
     "pytest>=9.1",
     "pytest-django>=4.13",
     "factory-boy>=3.3",
+    "ruff>=0.14",
+    "ty>=0.0.1a21",
 ]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+extend-exclude = ["*/migrations/*"]
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "UP",     # pyupgrade
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "DJ",     # flake8-django
+    "SIM",    # flake8-simplify
+    "T20",    # flake8-print
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["config", "shop"]
+
+[tool.ty.environment]
+python = "./.venv"
+
+[tool.ty.src]
+include = ["config", "shop", "manage.py"]
+
+# ty has no Django plugin yet (unlike mypy + django-stubs): it sees ORM
+# descriptors instead of instance values - `item.price` is a `DecimalField` to
+# it, model attributes added by the metaclass (`id`, `objects`, `*_id`) are
+# "unresolved", and factory_boy factories are opaque. These rules are pure
+# noise on a Django codebase today, so they are off; everything else
+# (unresolved imports/references, bad calls into our own code, etc.) stays on.
+[tool.ty.rules]
+unresolved-attribute = "ignore"
+invalid-argument-type = "ignore"
+invalid-assignment = "ignore"
+invalid-return-type = "ignore"
+unsupported-operator = "ignore"
+not-subscriptable = "ignore"
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings"
