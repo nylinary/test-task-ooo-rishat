@@ -18,6 +18,30 @@ ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["*"])
 
 CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=[])
 
+# Railway (and most PaaS) terminate TLS in front of the app, so Django has to
+# trust the forwarded protocol header to build correct absolute URLs - those
+# end up in Stripe `success_url` / `cancel_url`.
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# Railway exposes the public domain of the service as an env variable, which
+# saves one manual configuration step after each deploy.
+RAILWAY_PUBLIC_DOMAIN = env.str("RAILWAY_PUBLIC_DOMAIN", default="")
+
+if RAILWAY_PUBLIC_DOMAIN:
+    ALLOWED_HOSTS = [*ALLOWED_HOSTS, RAILWAY_PUBLIC_DOMAIN]
+    CSRF_TRUSTED_ORIGINS = [*CSRF_TRUSTED_ORIGINS, f"https://{RAILWAY_PUBLIC_DOMAIN}"]
+
+# HTTPS-only hardening. Off by default so that a plain-HTTP `docker compose up`
+# keeps working; Railway serves over HTTPS, so it is enabled there automatically.
+SECURE_HTTPS_ONLY = env.bool("DJANGO_SECURE_HTTPS_ONLY", default=bool(RAILWAY_PUBLIC_DOMAIN))
+
+if SECURE_HTTPS_ONLY:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 60 * 60 * 24 * 30
+
 ROOT_URLCONF = "config.urls"
 WSGI_APPLICATION = "config.wsgi.application"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
