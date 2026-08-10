@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Django
+db.sqlite3
+staticfiles/
+
+# Environment
+.env
+
+# Tooling
+.pytest_cache/
+.ruff_cache/
+.DS_Store

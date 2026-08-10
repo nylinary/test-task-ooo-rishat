@@ -1,0 +1,31 @@
+[project]
+name = "stripe-shop"
+version = "0.1.0"
+description = "Django + Stripe test task: items, orders, discounts and taxes paid through Stripe Checkout and Payment Intents"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "django>=5.2,<6.0",
+    "djangorestframework>=3.18",
+    "django-environ>=0.14",
+    "stripe>=15.4,<16",
+    "gunicorn>=26.0",
+    "whitenoise>=6.12",
+    "psycopg[binary]>=3.2",
+]
+
+# An application, not an installable package - `uv sync` only manages the deps.
+[tool.uv]
+package = false
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1",
+    "pytest-django>=4.13",
+    "factory-boy>=3.3",
+]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+python_files = ["test_*.py"]
+addopts = "-ra"
