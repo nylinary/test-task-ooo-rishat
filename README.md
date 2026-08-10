@@ -122,8 +122,9 @@ templates/, static/   # UI
 
 - **Checkout Session for an order** sends real line items and attaches the discount as a Stripe
   Coupon and the tax as a Stripe Tax Rate, so the Checkout form shows them as separate lines.
-  Created Stripe objects are cached on the models per currency/percentage (Stripe coupons are
-  immutable — editing a discount produces a new coupon).
+  Created Stripe objects are cached on the models, keyed by currency, percentage and name — a
+  coupon's `percent_off` is immutable on Stripe, and renames are treated the same way, so any
+  edit in the admin mints a fresh coupon/tax rate instead of showing stale values in Checkout.
 - **Payment Intent** has no line items, so the total (discount applied before tax, mirroring
   Stripe's own order of operations) is computed by `order_totals` and charged as one amount.
 - An order must be single-currency — a Stripe payment happens in one currency against one

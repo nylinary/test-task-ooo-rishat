@@ -102,11 +102,13 @@ def stripe_coupon_id(*, discount: Discount, currency: str) -> str:
     Return the Stripe Coupon for a discount, creating it on first use.
 
     Stripe objects belong to a single Stripe account, and the account depends
-    on the currency - hence a cache per currency. The percentage is part of the
-    cache key because a Stripe Coupon is immutable: editing the discount in the
-    admin has to produce a new coupon.
+    on the currency - hence a cache per currency. The percentage and the name
+    are part of the cache key so that editing the discount in the admin mints
+    a fresh coupon instead of Checkout showing stale values (a coupon's
+    `percent_off` is immutable on Stripe; renames are simplest to treat the
+    same way, at the cost of an orphaned one-off coupon per edit).
     """
-    cache_key = f"{currency}:{discount.percent_off:.2f}"
+    cache_key = f"{currency}:{discount.percent_off:.2f}:{discount.name}"
     coupon_id = discount.stripe_coupon_ids.get(cache_key)
 
     if coupon_id:
@@ -125,8 +127,9 @@ def stripe_coupon_id(*, discount: Discount, currency: str) -> str:
 
 
 def stripe_tax_rate_id(*, tax: Tax, currency: str) -> str:
-    """Return the Stripe Tax Rate for a tax, creating it on first use."""
-    cache_key = f"{currency}:{tax.percentage:.2f}:{'inclusive' if tax.is_inclusive else 'exclusive'}"
+    """Return the Stripe Tax Rate for a tax, creating it on first use (same keying as coupons)."""
+    inclusive = "inclusive" if tax.is_inclusive else "exclusive"
+    cache_key = f"{currency}:{tax.percentage:.2f}:{inclusive}:{tax.name}"
     tax_rate_id = tax.stripe_tax_rate_ids.get(cache_key)
 
     if tax_rate_id:

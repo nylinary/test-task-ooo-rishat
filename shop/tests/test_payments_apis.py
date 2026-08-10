@@ -91,11 +91,12 @@ class TestOrderCheckoutSessionApi:
         assert kwargs["line_items"][0].tax_rate_ids == ["txr_123"]
         assert kwargs["line_items"][0].quantity == 2
 
-        # Stripe object ids are cached on the models per currency.
+        # Stripe object ids are cached on the models per currency and label,
+        # so editing a discount/tax in the admin mints a fresh Stripe object.
         order.discount.refresh_from_db()
         order.tax.refresh_from_db()
-        assert "usd:10.00" in order.discount.stripe_coupon_ids
-        assert "usd:20.00:exclusive" in order.tax.stripe_tax_rate_ids
+        assert "usd:10.00:Welcome discount" in order.discount.stripe_coupon_ids
+        assert "usd:20.00:exclusive:VAT" in order.tax.stripe_tax_rate_ids
 
     def test_mixed_currency_order_is_a_400(self, client: Client):
         order_item = OrderItemFactory(item__currency=Currency.USD)
