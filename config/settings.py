@@ -10,11 +10,20 @@ read_env_file(BASE_DIR)
 # Core
 # ---------------------------------------------------------------------------
 
-SECRET_KEY = env.str("DJANGO_SECRET_KEY", default="insecure-secret-key-for-local-development")
-
 DEBUG = env.bool("DJANGO_DEBUG", default=False)
 
-ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["*"])
+# The insecure fallback exists only under DEBUG - a production boot without a
+# real key must fail loudly (django-environ raises ImproperlyConfigured).
+if DEBUG:
+    SECRET_KEY = env.str("DJANGO_SECRET_KEY", default="insecure-secret-key-for-local-development")
+else:
+    SECRET_KEY = env.str("DJANGO_SECRET_KEY")
+
+# The wildcard is a DEBUG convenience only. In production the allowlist is the
+# explicit env value (plus the Railway domain appended below); host validation
+# matters here because Stripe success/cancel URLs are built from the request
+# host, so a spoofed Host header must never pass.
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["*"] if DEBUG else ["localhost", "127.0.0.1"])
 
 CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=[])
 

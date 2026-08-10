@@ -73,7 +73,7 @@ Everything is configured through environment variables (see [.env.example](.env.
 | `STRIPE_PUBLISHABLE_KEY` / `STRIPE_SECRET_KEY` | Default Stripe keypair (used for every currency without its own) |
 | `STRIPE_USD_*` / `STRIPE_EUR_*` | Optional per-currency keypairs (two Stripe accounts) |
 | `DATABASE_URL` | Postgres connection string; SQLite file when unset |
-| `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS` | Standard Django settings |
+| `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS` | Standard Django settings; the secret key is **required** when `DJANGO_DEBUG` is off, and the host allowlist defaults to `localhost,127.0.0.1` (+ the Railway domain) outside of DEBUG |
 | `DJANGO_SUPERUSER_USERNAME` / `_PASSWORD` / `_EMAIL` | Admin account created by `manage.py ensure_superuser` |
 | `SEED_DEMO_DATA` | `True` → seed demo data on container start |
 | `DJANGO_SECURE_HTTPS_ONLY` | Force HTTPS-only cookies/redirects (auto-on on Railway) |
@@ -87,7 +87,8 @@ Everything is configured through environment variables (see [.env.example](.env.
    `DJANGO_SUPERUSER_USERNAME`, `DJANGO_SUPERUSER_PASSWORD`, and optionally `SEED_DEMO_DATA=True`
    for demo content.
 4. Generate a public domain for the service — `RAILWAY_PUBLIC_DOMAIN` is picked up automatically
-   (allowed hosts, CSRF origins, HTTPS hardening).
+   (allowed hosts, CSRF origins, HTTPS hardening). For a custom domain, add it to
+   `DJANGO_ALLOWED_HOSTS` and `DJANGO_CSRF_TRUSTED_ORIGINS` yourself.
 
 ## Tests, linting, types
 

@@ -26,8 +26,9 @@ RUN groupadd --system app && useradd --system --gid app app
 COPY --from=build /app/.venv /app/.venv
 COPY . .
 
-# `collectstatic` needs the settings module but no real secrets.
-RUN python manage.py collectstatic --noinput \
+# `collectstatic` needs the settings module but no real secrets - the
+# placeholder key never leaves the build step.
+RUN DJANGO_SECRET_KEY=collectstatic-build-placeholder python manage.py collectstatic --noinput \
     && chown -R app:app /app
 
 USER app
