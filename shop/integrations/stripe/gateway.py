@@ -50,11 +50,14 @@ def _stripe_call(action: str) -> Iterator[None]:
     try:
         yield
     except stripe.StripeError as exc:
+        # Full details go to the server log only. Raw Stripe messages are not
+        # safe for clients - e.g. an AuthenticationError spells out fragments
+        # of the secret key. The stable machine-readable code is safe.
         logger.exception("Stripe call failed: %s", action)
 
         raise ApplicationError(
             f"Payment provider error while {action}.",
-            extra={"stripe_error": exc.user_message or str(exc)},
+            extra={"stripe_error_code": exc.code} if exc.code else None,
         ) from exc
 
 

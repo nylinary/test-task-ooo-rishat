@@ -2,6 +2,7 @@ from decimal import Decimal
 from unittest.mock import patch
 
 import pytest
+import stripe
 from django.test import Client
 
 from shop.core.money import Currency
@@ -41,6 +42,26 @@ class TestItemCheckoutSessionApi:
         response = client.get(f"/buy/{item.id}")
 
         assert response.status_code == 404
+
+    def test_stripe_error_details_never_reach_the_client(self, client: Client, settings):
+        settings.STRIPE_ACCOUNTS = {"usd": {"publishable_key": "pk_test_x", "secret_key": "sk_test_x"}}
+        item = ItemFactory()
+
+        with patch("shop.integrations.stripe.gateway.get_stripe_client") as get_client:
+            get_client.return_value.v1.checkout.sessions.create.side_effect = stripe.AuthenticationError(
+                "Invalid API Key provided: sk_live_secret1234", code="api_key_invalid"
+            )
+
+            response = client.get(f"/buy/{item.id}")
+
+        assert response.status_code == 400
+        # The raw Stripe message (with the key fragment) stays server-side;
+        # only a generic message and the stable error code are exposed.
+        assert b"sk_live" not in response.content
+        assert response.json() == {
+            "message": "Payment provider error while creating a checkout session.",
+            "extra": {"stripe_error_code": "api_key_invalid"},
+        }
 
 
 class TestOrderCheckoutSessionApi:
