@@ -41,13 +41,13 @@ def index(request: HttpRequest) -> HttpResponse:
 
 def item_detail(request: HttpRequest, item_id: int) -> HttpResponse:
     item = item_get(item_id=item_id)
-    publishable_key, stripe_error = _publishable_key(currency=item.currency)
 
-    return render(
-        request,
-        "web/item_detail.html",
-        {"item": item, "stripe_publishable_key": publishable_key, "stripe_error": stripe_error},
-    )
+    # The page itself only redirects to the hosted Checkout URL, so it needs no
+    # publishable key - but surface a config error early instead of a broken
+    # Buy button.
+    _, stripe_error = _publishable_key(currency=item.currency)
+
+    return render(request, "web/item_detail.html", {"item": item, "stripe_error": stripe_error})
 
 
 def order_detail(request: HttpRequest, order_id: int) -> HttpResponse:

@@ -28,12 +28,9 @@
 {% block scripts %}
   {% if not stripe_error %}
     {% url 'payments:item-checkout-session' item.id as checkout_url %}
-    {{ stripe_publishable_key|json_script:"publishable-key" }}
     {{ checkout_url|json_script:"checkout-url" }}
 
-    <script src="https://js.stripe.com/v3/"></script>
     <script>
-      const stripe = Stripe(JSON.parse(document.getElementById("publishable-key").textContent));
       const checkoutUrl = JSON.parse(document.getElementById("checkout-url").textContent);
 
       const buyButton = document.getElementById("buy-button");
@@ -52,18 +49,8 @@
             throw new Error(session.message || "Could not start the payment.");
           }
 
-          // 2. Redirect to the Stripe Checkout form.
-          if (typeof stripe.redirectToCheckout === "function") {
-            const { error } = await stripe.redirectToCheckout({ sessionId: session.id });
-
-            if (error) {
-              throw new Error(error.message);
-            }
-          } else {
-            // Newer Stripe.js versions dropped redirectToCheckout in favour of
-            // the session URL.
-            window.location.href = session.url;
-          }
+          // 2. Follow the session URL to the hosted Stripe Checkout form.
+          window.location.assign(session.url);
         } catch (error) {
           errorBox.textContent = error.message;
           errorBox.hidden = false;

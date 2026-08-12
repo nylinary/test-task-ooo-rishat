@@ -124,15 +124,8 @@
         try {
           const session = await requestJSON(checkoutUrl);
 
-          if (typeof stripe.redirectToCheckout === "function") {
-            const { error } = await stripe.redirectToCheckout({ sessionId: session.id });
-
-            if (error) {
-              throw new Error(error.message);
-            }
-          } else {
-            window.location.href = session.url;
-          }
+          // Hosted Checkout - just follow the session URL.
+          window.location.assign(session.url);
         } catch (error) {
           showError(error.message);
           checkoutButton.disabled = false;

@@ -148,7 +148,6 @@ class TestWebPages:
         assert response.status_code == 200
         assert "Blue Widget" in content
         assert 'id="buy-button"' in content
-        assert "pk_test_x" in content
 
     def test_item_page_shows_error_when_keys_are_missing(self, client: Client, settings):
         settings.STRIPE_ACCOUNTS = {"usd": {"publishable_key": "", "secret_key": ""}}
