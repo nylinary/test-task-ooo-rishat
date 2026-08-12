@@ -12,7 +12,7 @@ class ItemAdmin(admin.ModelAdmin):
     search_fields = ("name", "description")
     readonly_fields = ("created_at", "updated_at")
 
-    @admin.display(description="Buy page")
+    @admin.display(description="Страница покупки")
     def buy_page(self, obj: Item) -> str:
         url = reverse("web:item-detail", kwargs={"item_id": obj.id})
 

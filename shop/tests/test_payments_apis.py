@@ -59,7 +59,7 @@ class TestItemCheckoutSessionApi:
         # only a generic message and the stable error code are exposed.
         assert b"sk_live" not in response.content
         assert response.json() == {
-            "message": "Payment provider error while creating a checkout session.",
+            "message": "Ошибка платёжного провайдера при создании Checkout Session.",
             "extra": {"stripe_error_code": "api_key_invalid"},
         }
 
@@ -106,7 +106,7 @@ class TestOrderCheckoutSessionApi:
         response = client.get(f"/orders/{order_item.order.id}/buy")
 
         assert response.status_code == 400
-        assert "currency" in response.json()["message"]
+        assert "валюте" in response.json()["message"]
 
 
 class TestOrderPaymentIntentApi:
@@ -157,7 +157,7 @@ class TestWebPages:
         response = client.get(f"/item/{item.id}")
 
         assert response.status_code == 200
-        assert "keypair" in response.content.decode()
+        assert "кейпар" in response.content.decode()
 
     def test_order_page_renders_totals(self, client: Client, settings):
         settings.STRIPE_ACCOUNTS = {
@@ -187,7 +187,7 @@ class TestWebPages:
         response = client.get("/")
 
         assert response.status_code == 200
-        assert "same currency" in response.content.decode()
+        assert "одной валюте" in response.content.decode()
 
     def test_mixed_currency_order_page_is_an_error_page(self, client: Client):
         order_item = OrderItemFactory(item__currency=Currency.USD)
@@ -196,11 +196,11 @@ class TestWebPages:
         response = client.get(f"/orders/{order_item.order.id}")
 
         assert response.status_code == 400
-        assert "Something went wrong" in response.content.decode()
+        assert "Что-то пошло не так" in response.content.decode()
 
     def test_payment_result_page_reflects_the_redirect_status(self, client: Client):
         success = client.get("/payment/success", {"payment_intent": "pi_1", "redirect_status": "succeeded"})
         failed = client.get("/payment/success", {"payment_intent": "pi_1", "redirect_status": "failed"})
 
-        assert "went through" in success.content.decode()
-        assert "Payment failed" in failed.content.decode()
+        assert "платёж прошёл" in success.content.decode()
+        assert "Оплата не прошла" in failed.content.decode()

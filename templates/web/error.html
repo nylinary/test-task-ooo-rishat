@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}Something went wrong{% endblock %}
+{% block title %}Что-то пошло не так{% endblock %}
 
 {% block content %}
   <section class="panel">
-    <h1>Something went wrong</h1>
+    <h1>Что-то пошло не так</h1>
     <p class="alert alert--error">{{ message }}</p>
-    <a class="button" href="{% url 'web:index' %}">Back to the shop</a>
+    <a class="button" href="{% url 'web:index' %}">Вернуться в магазин</a>
   </section>
 {% endblock %}

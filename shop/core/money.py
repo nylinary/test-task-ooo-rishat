@@ -65,11 +65,11 @@ def resolve_single_currency(currencies: Iterable[str]) -> str:
     distinct = set(currencies)
 
     if not distinct:
-        raise ApplicationError("There are no items to determine the currency from.")
+        raise ApplicationError("Нет товаров, по которым можно определить валюту.")
 
     if len(distinct) > 1:
         raise ApplicationError(
-            "All items must share the same currency to be paid for together.",
+            "Все товары должны быть в одной валюте, чтобы оплатить их вместе.",
             extra={"currencies": sorted(distinct)},
         )
 

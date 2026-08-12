@@ -39,7 +39,7 @@ def application_exception_handler(exc, ctx) -> Response | None:
         response.data = {"detail": response.data}
 
     if isinstance(exc, exceptions.ValidationError):
-        response.data["message"] = "Validation error"
+        response.data["message"] = "Ошибка валидации"
         response.data["extra"] = {"fields": response.data.pop("detail")}
     else:
         response.data["message"] = response.data.pop("detail", str(exc))

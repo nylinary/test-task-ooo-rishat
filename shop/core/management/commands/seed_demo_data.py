@@ -9,26 +9,26 @@ from shop.orders.models import Discount, Order, OrderItem, Tax
 
 ITEMS = [
     {
-        "name": "Mechanical Keyboard",
-        "description": "Hot-swappable 75% keyboard with tactile switches.",
+        "name": "Механическая клавиатура",
+        "description": "Клавиатура 75% с тактильными переключателями и горячей заменой.",
         "price": Decimal("129.00"),
         "currency": Currency.USD,
     },
     {
-        "name": "4K Webcam",
-        "description": "Ultra HD webcam with autofocus and a privacy shutter.",
+        "name": "Веб-камера 4K",
+        "description": "Камера Ultra HD с автофокусом и шторкой приватности.",
         "price": Decimal("89.50"),
         "currency": Currency.USD,
     },
     {
-        "name": "Ergonomic Mouse",
-        "description": "Vertical wireless mouse, three connection modes.",
+        "name": "Эргономичная мышь",
+        "description": "Вертикальная беспроводная мышь, три режима подключения.",
         "price": Decimal("49.90"),
         "currency": Currency.EUR,
     },
     {
-        "name": "Laptop Stand",
-        "description": "Aluminium stand with adjustable height and angle.",
+        "name": "Подставка для ноутбука",
+        "description": "Алюминиевая подставка с регулировкой высоты и наклона.",
         "price": Decimal("39.00"),
         "currency": Currency.EUR,
     },
@@ -36,7 +36,7 @@ ITEMS = [
 
 
 class Command(BaseCommand):
-    help = "Fill the database with demo items, discounts, taxes and orders. Safe to run repeatedly."
+    help = "Наполняет базу демо-товарами, скидками, налогами и заказами. Можно запускать повторно."
 
     @transaction.atomic
     def handle(self, *args, **options) -> None:
@@ -47,11 +47,11 @@ class Command(BaseCommand):
             items[item.name] = item
 
         discount, _ = Discount.objects.update_or_create(
-            name="Welcome discount",
+            name="Приветственная скидка",
             defaults={"percent_off": Decimal("10.00")},
         )
         tax, _ = Tax.objects.update_or_create(
-            name="VAT",
+            name="НДС",
             defaults={"percentage": Decimal("20.00"), "is_inclusive": False},
         )
 
@@ -59,11 +59,11 @@ class Command(BaseCommand):
             usd_order = Order.objects.create(
                 customer_email="customer@example.com", discount=discount, tax=tax
             )
-            OrderItem.objects.create(order=usd_order, item=items["Mechanical Keyboard"], quantity=1)
-            OrderItem.objects.create(order=usd_order, item=items["4K Webcam"], quantity=2)
+            OrderItem.objects.create(order=usd_order, item=items["Механическая клавиатура"], quantity=1)
+            OrderItem.objects.create(order=usd_order, item=items["Веб-камера 4K"], quantity=2)
 
             eur_order = Order.objects.create(customer_email="customer@example.com")
-            OrderItem.objects.create(order=eur_order, item=items["Ergonomic Mouse"], quantity=1)
-            OrderItem.objects.create(order=eur_order, item=items["Laptop Stand"], quantity=1)
+            OrderItem.objects.create(order=eur_order, item=items["Эргономичная мышь"], quantity=1)
+            OrderItem.objects.create(order=eur_order, item=items["Подставка для ноутбука"], quantity=1)
 
-        self.stdout.write(self.style.SUCCESS("Demo data is in place."))
+        self.stdout.write(self.style.SUCCESS("Демо-данные загружены."))

@@ -6,8 +6,8 @@ from config.env import env
 
 class Command(BaseCommand):
     help = (
-        "Create (or update the password of) a superuser from DJANGO_SUPERUSER_USERNAME / "
-        "DJANGO_SUPERUSER_PASSWORD / DJANGO_SUPERUSER_EMAIL. Meant for automated deploys."
+        "Создаёт суперпользователя (или обновляет ему пароль) из DJANGO_SUPERUSER_USERNAME / "
+        "DJANGO_SUPERUSER_PASSWORD / DJANGO_SUPERUSER_EMAIL. Предназначена для автоматических деплоев."
     )
 
     def handle(self, *args, **options) -> None:
@@ -16,7 +16,7 @@ class Command(BaseCommand):
         email = env.str("DJANGO_SUPERUSER_EMAIL", default="admin@example.com")
 
         if not username or not password:
-            self.stdout.write("DJANGO_SUPERUSER_USERNAME / DJANGO_SUPERUSER_PASSWORD are not set, skipping.")
+            self.stdout.write("DJANGO_SUPERUSER_USERNAME / DJANGO_SUPERUSER_PASSWORD не заданы — пропускаю.")
             return
 
         user_model = get_user_model()
@@ -30,5 +30,5 @@ class Command(BaseCommand):
         user.set_password(password)
         user.save()
 
-        action = "created" if created else "updated"
-        self.stdout.write(self.style.SUCCESS(f"Superuser '{username}' {action}."))
+        action = "создан" if created else "обновлён"
+        self.stdout.write(self.style.SUCCESS(f"Суперпользователь '{username}' {action}."))

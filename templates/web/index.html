@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% load money %}
 
-{% block title %}Stripe Shop{% endblock %}
+{% block title %}Магазин Stripe{% endblock %}
 
 {% block content %}
   <section>
-    <h1>Items</h1>
-    <p class="muted">Every item is priced in its own currency and is paid for with the matching Stripe keypair.</p>
+    <h1>Товары</h1>
+    <p class="muted">У каждого товара своя валюта — оплата проходит через соответствующий ей Stripe-кейпар.</p>
 
     <div class="grid">
       {% for item in items %}
@@ -18,31 +18,31 @@
           <p class="card__text">{{ item.description|default:"&mdash;" }}</p>
           <div class="card__foot">
             <span class="price">{{ item.price|money:item.currency }}</span>
-            <a class="button" href="{% url 'web:item-detail' item.id %}">Open</a>
+            <a class="button" href="{% url 'web:item-detail' item.id %}">Открыть</a>
           </div>
         </article>
       {% empty %}
-        <p class="muted">No items yet &mdash; add some in the <a href="{% url 'admin:catalog_item_changelist' %}">admin</a>.</p>
+        <p class="muted">Товаров пока нет &mdash; добавьте их в <a href="{% url 'admin:catalog_item_changelist' %}">админке</a>.</p>
       {% endfor %}
     </div>
   </section>
 
   <section>
-    <h1>Orders</h1>
-    <p class="muted">An order groups several items and can carry a discount and a tax.</p>
+    <h1>Заказы</h1>
+    <p class="muted">Заказ объединяет несколько товаров; к нему можно прикрепить скидку и налог.</p>
 
     <div class="grid">
       {% for row in orders %}
         <article class="card">
           <div class="card__head">
-            <h2 class="card__title">Order #{{ row.order.id }}</h2>
+            <h2 class="card__title">Заказ №{{ row.order.id }}</h2>
             {% if row.totals %}<span class="badge">{{ row.totals.currency|upper }}</span>{% endif %}
           </div>
           <p class="card__text">
             {% for order_item in row.order.order_items.all %}
               {{ order_item.item.name }} &times;{{ order_item.quantity }}{% if not forloop.last %}, {% endif %}
             {% empty %}
-              Empty order
+              Пустой заказ
             {% endfor %}
           </p>
           <div class="card__foot">
@@ -51,11 +51,11 @@
             {% else %}
               <span class="error-text">{{ row.error }}</span>
             {% endif %}
-            <a class="button" href="{% url 'web:order-detail' row.order.id %}">Open</a>
+            <a class="button" href="{% url 'web:order-detail' row.order.id %}">Открыть</a>
           </div>
         </article>
       {% empty %}
-        <p class="muted">No orders yet &mdash; create one in the <a href="{% url 'admin:orders_order_changelist' %}">admin</a>.</p>
+        <p class="muted">Заказов пока нет &mdash; создайте один в <a href="{% url 'admin:orders_order_changelist' %}">админке</a>.</p>
       {% endfor %}
     </div>
   </section>

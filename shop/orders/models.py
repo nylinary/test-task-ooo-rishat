@@ -15,21 +15,26 @@ class Discount(BaseModel):
     Session is created.
     """
 
-    name = models.CharField(max_length=255)
+    name = models.CharField("название", max_length=255)
     percent_off = models.DecimalField(
+        "процент скидки",
         max_digits=5,
         decimal_places=2,
         validators=[MinValueValidator(Decimal("0.01")), MaxValueValidator(Decimal("100"))],
     )
-    is_active = models.BooleanField(default=True, help_text="Inactive discounts are not applied to orders.")
+    is_active = models.BooleanField(
+        "активна", default=True, help_text="Неактивные скидки не применяются к заказам."
+    )
     stripe_coupon_ids = models.JSONField(
         default=dict,
         editable=False,
-        help_text="Cache of the Stripe Coupon created per Stripe account (currency).",
+        help_text="Кэш Stripe-купонов, созданных для каждого Stripe-аккаунта (валюты).",
     )
 
     class Meta:
         ordering = ("id",)
+        verbose_name = "скидка"
+        verbose_name_plural = "скидки"
 
     def __str__(self) -> str:
         return f"{self.name} (-{self.percent_off}%)"
@@ -43,35 +48,43 @@ class Tax(BaseModel):
     Session (`line_items[].tax_rates`).
     """
 
-    name = models.CharField(max_length=255)
+    name = models.CharField("название", max_length=255)
     percentage = models.DecimalField(
+        "ставка, %",
         max_digits=5,
         decimal_places=2,
         validators=[MinValueValidator(Decimal("0")), MaxValueValidator(Decimal("100"))],
     )
     is_inclusive = models.BooleanField(
+        "включён в цену",
         default=False,
-        help_text="Inclusive taxes are already part of the item price.",
+        help_text="Инклюзивный налог уже входит в цену товара.",
     )
-    is_active = models.BooleanField(default=True, help_text="Inactive taxes are not applied to orders.")
+    is_active = models.BooleanField(
+        "активен", default=True, help_text="Неактивные налоги не применяются к заказам."
+    )
     stripe_tax_rate_ids = models.JSONField(
         default=dict,
         editable=False,
-        help_text="Cache of the Stripe Tax Rate created per Stripe account (currency).",
+        help_text="Кэш Stripe-ставок, созданных для каждого Stripe-аккаунта (валюты).",
     )
 
     class Meta:
         ordering = ("id",)
-        verbose_name_plural = "taxes"
+        verbose_name = "налог"
+        verbose_name_plural = "налоги"
 
     def __str__(self) -> str:
         return f"{self.name} ({self.percentage}%)"
 
 
 class Order(BaseModel):
-    customer_email = models.EmailField(blank=True, help_text="Pre-filled in the Stripe Checkout form.")
+    customer_email = models.EmailField(
+        "email покупателя", blank=True, help_text="Подставляется в форму Stripe Checkout."
+    )
     discount = models.ForeignKey(
         Discount,
+        verbose_name="скидка",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
@@ -79,18 +92,23 @@ class Order(BaseModel):
     )
     tax = models.ForeignKey(
         Tax,
+        verbose_name="налог",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
         related_name="orders",
     )
-    items = models.ManyToManyField("catalog.Item", through="orders.OrderItem", related_name="orders")
+    items = models.ManyToManyField(
+        "catalog.Item", verbose_name="товары", through="orders.OrderItem", related_name="orders"
+    )
 
     class Meta:
         ordering = ("id",)
+        verbose_name = "заказ"
+        verbose_name_plural = "заказы"
 
     def __str__(self) -> str:
-        return f"Order #{self.pk}"
+        return f"Заказ №{self.pk}"
 
     @property
     def currency(self) -> str:
@@ -110,12 +128,18 @@ class Order(BaseModel):
 
 
 class OrderItem(BaseModel):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="order_items")
-    item = models.ForeignKey("catalog.Item", on_delete=models.PROTECT, related_name="order_items")
-    quantity = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])
+    order = models.ForeignKey(
+        Order, verbose_name="заказ", on_delete=models.CASCADE, related_name="order_items"
+    )
+    item = models.ForeignKey(
+        "catalog.Item", verbose_name="товар", on_delete=models.PROTECT, related_name="order_items"
+    )
+    quantity = models.PositiveIntegerField("количество", default=1, validators=[MinValueValidator(1)])
 
     class Meta:
         ordering = ("id",)
+        verbose_name = "позиция заказа"
+        verbose_name_plural = "позиции заказа"
         constraints = [
             models.UniqueConstraint(fields=["order", "item"], name="order_item_unique_item_per_order"),
         ]

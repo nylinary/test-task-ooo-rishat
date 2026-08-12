@@ -136,7 +136,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # I18N
 # ---------------------------------------------------------------------------
 
-LANGUAGE_CODE = "en-us"
+# Russian UI: Django's own strings (admin, auth, DRF errors) come translated
+# for free once the language is set.
+LANGUAGE_CODE = "ru-ru"
 TIME_ZONE = env.str("DJANGO_TIME_ZONE", default="UTC")
 USE_I18N = True
 USE_TZ = True

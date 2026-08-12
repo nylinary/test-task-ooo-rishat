@@ -1,24 +1,24 @@
 {% extends "base.html" %}
 
-{% block title %}{% if redirect_status == "failed" %}Payment failed{% elif redirect_status == "pending" or redirect_status == "processing" %}Payment processing{% else %}Payment complete{% endif %}{% endblock %}
+{% block title %}{% if redirect_status == "failed" %}Оплата не прошла{% elif redirect_status == "pending" or redirect_status == "processing" %}Платёж обрабатывается{% else %}Оплата завершена{% endif %}{% endblock %}
 
 {% block content %}
   <section class="panel">
     {% if redirect_status == "failed" %}
-      <h1>Payment failed</h1>
+      <h1>Оплата не прошла</h1>
       <p class="alert alert--error">
-        The payment was declined or cancelled &mdash; nothing was charged. Head back and try again.
+        Платёж отклонён или отменён &mdash; деньги не списаны. Вернитесь и попробуйте ещё раз.
       </p>
     {% elif redirect_status == "pending" or redirect_status == "processing" %}
-      <h1>Payment is processing</h1>
+      <h1>Платёж обрабатывается</h1>
       <p class="muted">
-        The payment method needs a moment to confirm &mdash; check the Stripe dashboard for the final status.
+        Платёжному методу нужно время на подтверждение &mdash; финальный статус смотрите в дашборде Stripe.
       </p>
     {% else %}
-      <h1>Thanks! Your test payment went through.</h1>
+      <h1>Спасибо! Тестовый платёж прошёл.</h1>
       <p class="muted">
-        No webhooks are configured in this test task, so nothing is stored on our side &mdash;
-        the payment itself is visible in the Stripe dashboard.
+        Вебхуки в этом тестовом задании не настроены, поэтому на нашей стороне ничего не сохраняется &mdash;
+        сам платёж виден в дашборде Stripe.
       </p>
     {% endif %}
 
@@ -32,11 +32,11 @@
         <dd><code>{{ payment_intent_id }}</code></dd>
       {% endif %}
       {% if redirect_status %}
-        <dt>Status</dt>
+        <dt>Статус</dt>
         <dd><code>{{ redirect_status }}</code></dd>
       {% endif %}
     </dl>
 
-    <a class="button" href="{% url 'web:index' %}">Back to the shop</a>
+    <a class="button" href="{% url 'web:index' %}">Вернуться в магазин</a>
   </section>
 {% endblock %}

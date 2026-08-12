@@ -24,15 +24,15 @@ def order_create(
     customer_email: str = "",
 ) -> Order:
     if not lines:
-        raise ApplicationError("An order must contain at least one item.")
+        raise ApplicationError("Заказ должен содержать хотя бы один товар.")
 
     if any(line.quantity < 1 for line in lines):
-        raise ApplicationError("Item quantity must be at least 1.")
+        raise ApplicationError("Количество товара должно быть не меньше 1.")
 
     item_ids = [line.item.id for line in lines]
 
     if len(set(item_ids)) != len(item_ids):
-        raise ApplicationError("An item can only be added to an order once, use `quantity` instead.")
+        raise ApplicationError("Товар можно добавить в заказ только один раз — используйте `quantity`.")
 
     # Fails loudly for mixed-currency orders, which cannot be charged as a
     # single Stripe payment.

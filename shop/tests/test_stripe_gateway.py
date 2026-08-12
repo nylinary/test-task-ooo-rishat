@@ -91,7 +91,7 @@ class TestCreateCheckoutSession:
             )
 
         # The raw Stripe message (request ids, params) stays out of the error.
-        assert exc_info.value.message == "Payment provider error while creating a checkout session."
+        assert exc_info.value.message == "Ошибка платёжного провайдера при создании Checkout Session."
         assert exc_info.value.extra == {"stripe_error_code": "resource_missing"}
 
 

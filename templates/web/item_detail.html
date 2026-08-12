@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% load money %}
 
-{% block title %}Buy {{ item.name }}{% endblock %}
+{% block title %}Купить {{ item.name }}{% endblock %}
 
 {% block content %}
-  <a class="back" href="{% url 'web:index' %}">&larr; All items</a>
+  <a class="back" href="{% url 'web:index' %}">&larr; Все товары</a>
 
   <section class="panel">
     <div class="card__head">
@@ -18,7 +18,7 @@
     {% if stripe_error %}
       <p class="alert alert--error">{{ stripe_error }}</p>
     {% else %}
-      <button id="buy-button" class="button button--primary">Buy</button>
+      <button id="buy-button" class="button button--primary">Купить</button>
     {% endif %}
 
     <p id="payment-error" class="alert alert--error" hidden></p>
@@ -41,15 +41,15 @@
         errorBox.hidden = true;
 
         try {
-          // 1. Ask our backend for a Stripe Checkout Session.
+          // 1. Просим бэкенд создать Stripe Checkout Session.
           const response = await fetch(checkoutUrl, { method: "GET" });
           const session = await response.json();
 
           if (!response.ok) {
-            throw new Error(session.message || "Could not start the payment.");
+            throw new Error(session.message || "Не удалось начать оплату.");
           }
 
-          // 2. Follow the session URL to the hosted Stripe Checkout form.
+          // 2. Переходим на платёжную форму Stripe Checkout.
           window.location.assign(session.url);
         } catch (error) {
           errorBox.textContent = error.message;

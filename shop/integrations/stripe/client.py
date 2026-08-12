@@ -22,15 +22,15 @@ def get_stripe_account(*, currency: str) -> StripeAccount:
 
     if account is None:
         raise ApplicationError(
-            f"There is no Stripe account configured for {currency.upper()}.",
+            f"Для валюты {currency.upper()} не настроен Stripe-аккаунт.",
             extra={"supported_currencies": sorted(settings.STRIPE_ACCOUNTS)},
         )
 
     if not account["secret_key"] or not account["publishable_key"]:
         raise ApplicationError(
-            f"The Stripe keypair for {currency.upper()} is missing. "
-            f"Set STRIPE_{currency.upper()}_SECRET_KEY / STRIPE_{currency.upper()}_PUBLISHABLE_KEY "
-            "(or the STRIPE_SECRET_KEY / STRIPE_PUBLISHABLE_KEY fallback)."
+            f"Не задан Stripe-кейпар для {currency.upper()}. "
+            f"Задайте STRIPE_{currency.upper()}_SECRET_KEY / STRIPE_{currency.upper()}_PUBLISHABLE_KEY "
+            "(или дефолтные STRIPE_SECRET_KEY / STRIPE_PUBLISHABLE_KEY)."
         )
 
     return StripeAccount(

@@ -1,6 +1,10 @@
 from django.contrib import admin
 from django.urls import include, path
 
+admin.site.site_header = "Магазин Stripe"
+admin.site.site_title = "Магазин Stripe"
+admin.site.index_title = "Управление магазином"
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     # JSON API (`/buy/<item_id>`, order checkout & payment intent endpoints).

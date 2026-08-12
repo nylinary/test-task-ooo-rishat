@@ -60,7 +60,7 @@ def _stripe_call(action: str) -> Iterator[None]:
         logger.exception("Stripe call failed: %s", action)
 
         raise ApplicationError(
-            f"Payment provider error while {action}.",
+            f"Ошибка платёжного провайдера при {action}.",
             extra={"stripe_error_code": exc.code} if exc.code else None,
         ) from exc
 
@@ -112,7 +112,7 @@ def create_checkout_session(
     if customer_email:
         params["customer_email"] = customer_email
 
-    with _stripe_call("creating a checkout session"):
+    with _stripe_call("создании Checkout Session"):
         session = client.v1.checkout.sessions.create(params=params)
 
     return CheckoutSession(id=session.id, url=session.url or "")
@@ -139,7 +139,7 @@ def create_payment_intent(
     if receipt_email:
         params["receipt_email"] = receipt_email
 
-    with _stripe_call("creating a payment intent"):
+    with _stripe_call("создании Payment Intent"):
         payment_intent = client.v1.payment_intents.create(params=params)
 
     return PaymentIntent(
@@ -155,7 +155,7 @@ def create_coupon(*, currency: str, name: str, percent_off: Decimal) -> str:
 
     params: CouponCreateParams = {"name": name, "percent_off": float(percent_off), "duration": "once"}
 
-    with _stripe_call("creating a coupon"):
+    with _stripe_call("создании купона"):
         coupon = client.v1.coupons.create(params=params)
 
     return coupon.id
@@ -170,7 +170,7 @@ def create_tax_rate(*, currency: str, name: str, percentage: Decimal, is_inclusi
         "inclusive": is_inclusive,
     }
 
-    with _stripe_call("creating a tax rate"):
+    with _stripe_call("создании налоговой ставки"):
         tax_rate = client.v1.tax_rates.create(params=params)
 
     return tax_rate.id

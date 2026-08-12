@@ -36,8 +36,8 @@ class OrderItemInlineFormSet(BaseInlineFormSet):
 
         if len(currencies) > 1:
             raise ValidationError(
-                "An order cannot mix currencies: %(currencies)s. "
-                "A Stripe payment is always made in a single currency.",
+                "Заказ не может смешивать валюты: %(currencies)s. "
+                "Платёж Stripe всегда проходит в одной валюте.",
                 params={"currencies": ", ".join(sorted(c.upper() for c in currencies))},
             )
 
@@ -64,7 +64,7 @@ class OrderAdmin(admin.ModelAdmin):
             .prefetch_related(Prefetch("order_items", queryset=OrderItem.objects.select_related("item")))
         )
 
-    @admin.display(description="Total")
+    @admin.display(description="Сумма")
     def total(self, obj: Order) -> str:
         try:
             totals = order_totals(order=obj)
@@ -73,7 +73,7 @@ class OrderAdmin(admin.ModelAdmin):
 
         return f"{totals.total:.2f} {totals.currency.upper()}"
 
-    @admin.display(description="Payment page")
+    @admin.display(description="Страница оплаты")
     def payment_page(self, obj: Order) -> str:
         url = reverse("web:order-detail", kwargs={"order_id": obj.id})
 

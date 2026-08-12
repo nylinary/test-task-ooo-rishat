@@ -8,23 +8,27 @@ from shop.core.money import CURRENCY_SYMBOLS, Currency
 
 
 class Item(BaseModel):
-    name = models.CharField(max_length=255)
-    description = models.TextField(blank=True)
+    name = models.CharField("название", max_length=255)
+    description = models.TextField("описание", blank=True)
     price = models.DecimalField(
+        "цена",
         max_digits=12,
         decimal_places=2,
         validators=[MinValueValidator(Decimal("0.01"))],
     )
     currency = models.CharField(
+        "валюта",
         max_length=3,
         choices=Currency.choices,
         default=Currency.USD,
-        help_text="Decides which Stripe keypair is used to pay for this item.",
+        help_text="Определяет, какой Stripe-кейпар используется для оплаты этого товара.",
     )
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField("активен", default=True)
 
     class Meta:
         ordering = ("id",)
+        verbose_name = "товар"
+        verbose_name_plural = "товары"
 
     def __str__(self) -> str:
         return f"{self.name} - {self.display_price}"
