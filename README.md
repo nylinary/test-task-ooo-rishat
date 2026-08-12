@@ -96,7 +96,7 @@ The toolchain is [Astral](https://astral.sh)'s: **uv** for dependencies, **ruff*
 formatting, **ty** for type checking.
 
 ```bash
-uv run pytest              # 25 tests; Stripe is mocked at the integration boundary
+uv run pytest              # Stripe is mocked at the integration boundary - no keys needed
 uv run ruff check .        # lint (incl. flake8-django, bugbear, isort)
 uv run ruff format --check .
 uv run ty check            # type check (Django-descriptor rules off - no Django plugin yet)

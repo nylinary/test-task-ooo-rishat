@@ -179,3 +179,28 @@ class TestWebPages:
 
         assert response.status_code == 200
         assert "Indexed Item" in response.content.decode()
+
+    def test_index_shows_the_error_for_broken_orders(self, client: Client):
+        order_item = OrderItemFactory(item__currency=Currency.USD)
+        OrderItemFactory(order=order_item.order, item__currency=Currency.EUR)
+
+        response = client.get("/")
+
+        assert response.status_code == 200
+        assert "same currency" in response.content.decode()
+
+    def test_mixed_currency_order_page_is_an_error_page(self, client: Client):
+        order_item = OrderItemFactory(item__currency=Currency.USD)
+        OrderItemFactory(order=order_item.order, item__currency=Currency.EUR)
+
+        response = client.get(f"/orders/{order_item.order.id}")
+
+        assert response.status_code == 400
+        assert "Something went wrong" in response.content.decode()
+
+    def test_payment_result_page_reflects_the_redirect_status(self, client: Client):
+        success = client.get("/payment/success", {"payment_intent": "pi_1", "redirect_status": "succeeded"})
+        failed = client.get("/payment/success", {"payment_intent": "pi_1", "redirect_status": "failed"})
+
+        assert "went through" in success.content.decode()
+        assert "Payment failed" in failed.content.decode()
