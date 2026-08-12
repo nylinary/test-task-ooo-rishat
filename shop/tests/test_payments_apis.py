@@ -93,6 +93,7 @@ class TestOrderCheckoutSessionApi:
 
         # Stripe object ids are cached on the models per currency and label,
         # so editing a discount/tax in the admin mints a fresh Stripe object.
+        assert order.discount is not None and order.tax is not None
         order.discount.refresh_from_db()
         order.tax.refresh_from_db()
         assert "usd:10.00:Welcome discount" in order.discount.stripe_coupon_ids

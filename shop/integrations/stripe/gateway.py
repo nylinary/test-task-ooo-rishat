@@ -14,7 +14,11 @@ from decimal import Decimal
 
 import stripe
 from stripe.params import CouponCreateParams, PaymentIntentCreateParams, TaxRateCreateParams
-from stripe.params.checkout import SessionCreateParams, SessionCreateParamsLineItem
+from stripe.params.checkout import (
+    SessionCreateParams,
+    SessionCreateParamsLineItem,
+    SessionCreateParamsLineItemPriceDataProductData,
+)
 
 from shop.core.exceptions import ApplicationError
 from shop.integrations.stripe.client import get_stripe_client
@@ -62,14 +66,16 @@ def _stripe_call(action: str) -> Iterator[None]:
 
 
 def _session_line_item(line_item: LineItem, *, currency: str) -> SessionCreateParamsLineItem:
+    product_data: SessionCreateParamsLineItemPriceDataProductData = {"name": line_item.name}
+
+    if line_item.description:
+        product_data["description"] = line_item.description
+
     params: SessionCreateParamsLineItem = {
         "price_data": {
             "currency": currency,
             "unit_amount": line_item.unit_amount,
-            "product_data": {
-                "name": line_item.name,
-                **({"description": line_item.description} if line_item.description else {}),
-            },
+            "product_data": product_data,
         },
         "quantity": line_item.quantity,
     }

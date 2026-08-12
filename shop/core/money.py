@@ -13,7 +13,8 @@ class Currency(models.TextChoices):
     EUR = "eur", "EUR"
 
 
-CURRENCY_SYMBOLS = {
+# Keyed by plain `str`: lookups use model field values, not enum members.
+CURRENCY_SYMBOLS: dict[str, str] = {
     Currency.USD: "$",
     Currency.EUR: "€",
 }

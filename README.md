@@ -94,14 +94,15 @@ uv run python manage.py runserver
 
 ## Тесты, линтер, типы
 
-Тулчейн — от [Astral](https://astral.sh): **uv** для зависимостей, **ruff** для линтинга
-и форматирования, **ty** для проверки типов.
+**uv** для зависимостей и **ruff** для линтинга/форматирования (оба — [Astral](https://astral.sh)),
+**mypy + django-stubs** для проверки типов: плагин понимает ORM (дескрипторы полей, менеджеры,
+nullable FK), поэтому типы проверяются по-настоящему, без отключённых правил.
 
 ```bash
 uv run pytest              # Stripe замокан на границе интеграции - ключи не нужны
 uv run ruff check .        # линт (flake8-django, bugbear, isort и др.)
 uv run ruff format --check .
-uv run ty check            # типы (правила про Django-дескрипторы отключены - плагина пока нет)
+uv run mypy                # типы (django-stubs + drf-stubs)
 ```
 
 ## Структура проекта
