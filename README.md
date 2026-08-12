@@ -1,131 +1,133 @@
-# Django + Stripe test task
+# Тестовое задание: Django + Stripe
 
-A small shop that sells items through [Stripe](https://stripe.com): hosted Checkout for single
-items and whole orders (with discounts and taxes), plus an embedded Payment Intent flow.
+Небольшой магазин, продающий товары через [Stripe](https://stripe.com): hosted Checkout для
+отдельных товаров и целых заказов (со скидками и налогами), плюс встроенная оплата через
+Payment Intent.
 
-Structured after the [HackSoft Django Styleguide](https://github.com/HackSoftware/Django-Styleguide):
-thin views, business logic in **services**, data fetching in **selectors**, and the Stripe SDK
-isolated behind an integration layer.
+Архитектура по [HackSoft Django Styleguide](https://github.com/HackSoftware/Django-Styleguide):
+тонкие вьюхи, бизнес-логика в **сервисах**, выборка данных в **селекторах**, Stripe SDK
+изолирован в интеграционном слое.
 
-## Endpoints
+## Эндпоинты
 
-| Method | Path                          | Description                                                        |
-|--------|-------------------------------|--------------------------------------------------------------------|
-| GET    | `/item/{id}`                  | HTML page for an item with a **Buy** button                        |
-| GET    | `/buy/{id}`                   | JSON `{id, url}` of a Stripe Checkout Session for the item         |
-| GET    | `/orders/{id}`                | HTML page for an order (items, discount, tax, total)               |
-| GET    | `/orders/{id}/buy`            | Checkout Session for the whole order (coupon + tax rate attached)  |
-| GET    | `/orders/{id}/payment-intent` | JSON `{id, client_secret, ...}` of a Payment Intent for the order  |
-| GET    | `/`                           | Landing page listing items and orders                              |
-| GET    | `/admin/`                     | Django admin (items, orders, discounts, taxes)                     |
+| Метод | Путь                          | Описание                                                              |
+|-------|-------------------------------|------------------------------------------------------------------------|
+| GET   | `/item/{id}`                  | HTML-страница товара с кнопкой **Buy**                                 |
+| GET   | `/buy/{id}`                   | JSON `{id, url}` Stripe Checkout Session для товара                    |
+| GET   | `/orders/{id}`                | HTML-страница заказа (товары, скидка, налог, итог)                     |
+| GET   | `/orders/{id}/buy`            | Checkout Session на весь заказ (с купоном и налоговой ставкой)         |
+| GET   | `/orders/{id}/payment-intent` | JSON `{id, client_secret, ...}` Payment Intent на сумму заказа         |
+| GET   | `/`                           | Главная страница со списком товаров и заказов                          |
+| GET   | `/admin/`                     | Django-админка (товары, заказы, скидки, налоги)                        |
 
-Errors follow one contract: `{"message": "...", "extra": {...}}`.
+Все ошибки в одном формате: `{"message": "...", "extra": {...}}`.
 
-## Implemented bonus tasks
+## Выполненные бонусные задачи
 
-- ✅ Docker / docker-compose (with Postgres)
-- ✅ Environment variables for all configuration
-- ✅ Django admin for all models
-- ✅ Deployable out of the box (Railway-ready: honours `$PORT`, `RAILWAY_PUBLIC_DOMAIN`, `DATABASE_URL`)
-- ✅ `Order` model combining several items into one payment
-- ✅ `Discount` / `Tax` models, passed to Stripe as a **Coupon** and a **Tax Rate**, so the
-  Checkout form itemises them
-- ✅ `Item.currency` (USD / EUR) with a Stripe keypair per currency — the item's currency picks
-  the keypair; both fall back to the default `STRIPE_*` keypair, so one pair is enough to run
-- ✅ Stripe **Payment Intent** (embedded Payment Element on the order page) in addition to
-  Checkout Sessions
+- ✅ Docker / docker-compose (с Postgres)
+- ✅ Вся конфигурация через environment variables
+- ✅ Все модели доступны в Django-админке
+- ✅ Готово к деплою из коробки (Railway: учитываются `$PORT`, `RAILWAY_PUBLIC_DOMAIN`, `DATABASE_URL`)
+- ✅ Модель `Order`, объединяющая несколько товаров в один платёж
+- ✅ Модели `Discount` / `Tax`, передаваемые в Stripe как **Coupon** и **Tax Rate** — Checkout-форма
+  показывает их отдельными строками
+- ✅ Поле `Item.currency` (USD / EUR) с отдельным Stripe-кейпаром на каждую валюту — валюта товара
+  выбирает кейпар; обе валюты падают обратно на дефолтную пару `STRIPE_*`, так что для запуска
+  достаточно одной
+- ✅ Stripe **Payment Intent** (встроенный Payment Element на странице заказа) в дополнение
+  к Checkout Session
 
-## Quick start (Docker)
+## Быстрый старт (Docker)
 
 ```bash
-cp .env.example .env   # put your Stripe test keys in
+cp .env.example .env   # впишите свои тестовые ключи Stripe
 docker compose up --build
 ```
 
-Then open <http://localhost:8000>. On start the container applies migrations, creates the admin
-user from `DJANGO_SUPERUSER_*`, and (when `SEED_DEMO_DATA=True`) seeds demo items and orders.
+Откройте <http://localhost:8000>. На старте контейнер применяет миграции, создаёт админа из
+`DJANGO_SUPERUSER_*` и (при `SEED_DEMO_DATA=True`) наполняет базу демо-товарами и заказами.
 
-Admin: <http://localhost:8000/admin/> — credentials come from `.env`
-(`admin` / `admin12345` with the example file).
+Админка: <http://localhost:8000/admin/> — креды берутся из `.env`
+(`admin` / `admin12345` с примером из репозитория).
 
-Pay with Stripe's test card: `4242 4242 4242 4242`, any future expiry, any CVC.
+Оплата тестовой картой Stripe: `4242 4242 4242 4242`, любой будущий срок, любой CVC.
 
-## Quick start (no Docker)
+## Быстрый старт (без Docker)
 
-Dependencies are managed with [uv](https://docs.astral.sh/uv/) (`pyproject.toml` + `uv.lock`):
+Зависимости управляются через [uv](https://docs.astral.sh/uv/) (`pyproject.toml` + `uv.lock`):
 
 ```bash
-uv sync                # creates .venv from the lockfile, dev tools included
-cp .env.example .env   # put your Stripe test keys in
+uv sync                # создаёт .venv из лок-файла, включая dev-инструменты
+cp .env.example .env   # впишите свои тестовые ключи Stripe
 
 uv run python manage.py migrate
-uv run python manage.py ensure_superuser   # reads DJANGO_SUPERUSER_* from .env
-uv run python manage.py seed_demo_data     # optional demo items/orders
+uv run python manage.py ensure_superuser   # читает DJANGO_SUPERUSER_* из .env
+uv run python manage.py seed_demo_data     # опционально: демо-товары и заказы
 uv run python manage.py runserver
 ```
 
-## Configuration
+## Конфигурация
 
-Everything is configured through environment variables (see [.env.example](.env.example)):
+Всё настраивается через environment variables (см. [.env.example](.env.example)):
 
-| Variable | Purpose |
-|----------|---------|
-| `STRIPE_PUBLISHABLE_KEY` / `STRIPE_SECRET_KEY` | Default Stripe keypair (used for every currency without its own) |
-| `STRIPE_USD_*` / `STRIPE_EUR_*` | Optional per-currency keypairs (two Stripe accounts) |
-| `DATABASE_URL` | Postgres connection string; SQLite file when unset |
-| `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS` | Standard Django settings; the secret key is **required** when `DJANGO_DEBUG` is off, and the host allowlist defaults to `localhost,127.0.0.1` (+ the Railway domain) outside of DEBUG |
-| `DJANGO_SUPERUSER_USERNAME` / `_PASSWORD` / `_EMAIL` | Admin account created by `manage.py ensure_superuser` |
-| `SEED_DEMO_DATA` | `True` → seed demo data on container start |
-| `DJANGO_SECURE_HTTPS_ONLY` | Force HTTPS-only cookies/redirects (auto-on on Railway) |
+| Переменная | Назначение |
+|------------|-----------|
+| `STRIPE_PUBLISHABLE_KEY` / `STRIPE_SECRET_KEY` | Дефолтный кейпар Stripe (для валют без собственного) |
+| `STRIPE_USD_*` / `STRIPE_EUR_*` | Опциональные кейпары на валюту (два Stripe-аккаунта) |
+| `DATABASE_URL` | Строка подключения к Postgres; без неё — файл SQLite |
+| `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS` | Стандартные настройки Django; секретный ключ **обязателен** при выключенном `DJANGO_DEBUG`, а список хостов вне DEBUG по умолчанию `localhost,127.0.0.1` (+ домен Railway) |
+| `DJANGO_SUPERUSER_USERNAME` / `_PASSWORD` / `_EMAIL` | Аккаунт админа, создаваемый `manage.py ensure_superuser` |
+| `SEED_DEMO_DATA` | `True` → наполнить базу демо-данными на старте контейнера |
+| `DJANGO_SECURE_HTTPS_ONLY` | Принудительный HTTPS (куки, редиректы); на Railway включается сам |
 
-## Deploying to Railway
+## Деплой на Railway
 
-1. Create a project from this repo — Railway builds the `Dockerfile` automatically.
-2. Add a Postgres service; Railway injects `DATABASE_URL` into the app when referenced
+1. Создайте проект из этого репозитория — Railway сам соберёт `Dockerfile`.
+2. Добавьте сервис Postgres; Railway прокинет `DATABASE_URL` в приложение через референс
    (`${{Postgres.DATABASE_URL}}`).
-3. Set the variables: `DJANGO_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`,
-   `DJANGO_SUPERUSER_USERNAME`, `DJANGO_SUPERUSER_PASSWORD`, and optionally `SEED_DEMO_DATA=True`
-   for demo content.
-4. Generate a public domain for the service — `RAILWAY_PUBLIC_DOMAIN` is picked up automatically
-   (allowed hosts, CSRF origins, HTTPS hardening). For a custom domain, add it to
-   `DJANGO_ALLOWED_HOSTS` and `DJANGO_CSRF_TRUSTED_ORIGINS` yourself.
+3. Задайте переменные: `DJANGO_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`,
+   `DJANGO_SUPERUSER_USERNAME`, `DJANGO_SUPERUSER_PASSWORD` и, при желании, `SEED_DEMO_DATA=True`
+   для демо-контента.
+4. Сгенерируйте публичный домен сервиса — `RAILWAY_PUBLIC_DOMAIN` подхватится автоматически
+   (allowed hosts, CSRF origins, HTTPS-настройки). Для собственного домена добавьте его в
+   `DJANGO_ALLOWED_HOSTS` и `DJANGO_CSRF_TRUSTED_ORIGINS` вручную.
 
-## Tests, linting, types
+## Тесты, линтер, типы
 
-The toolchain is [Astral](https://astral.sh)'s: **uv** for dependencies, **ruff** for linting and
-formatting, **ty** for type checking.
+Тулчейн — от [Astral](https://astral.sh): **uv** для зависимостей, **ruff** для линтинга
+и форматирования, **ty** для проверки типов.
 
 ```bash
-uv run pytest              # Stripe is mocked at the integration boundary - no keys needed
-uv run ruff check .        # lint (incl. flake8-django, bugbear, isort)
+uv run pytest              # Stripe замокан на границе интеграции - ключи не нужны
+uv run ruff check .        # линт (flake8-django, bugbear, isort и др.)
 uv run ruff format --check .
-uv run ty check            # type check (Django-descriptor rules off - no Django plugin yet)
+uv run ty check            # типы (правила про Django-дескрипторы отключены - плагина пока нет)
 ```
 
-## Project layout
+## Структура проекта
 
 ```
 config/               # settings, urls, wsgi/asgi
-pyproject.toml        # uv-managed deps + ruff/ty/pytest config; uv.lock pins everything
+pyproject.toml        # зависимости под uv + конфиг ruff/ty/pytest; uv.lock пинит всё
 shop/
-  api/                # DRF exception handler (single error contract)
-  catalog/            # Item model, selectors, admin
-  orders/             # Order/OrderItem/Discount/Tax, totals selector, order_create service
-  payments/           # services mapping models -> Stripe objects; JSON APIs (/buy/{id}, ...)
-  integrations/stripe # Stripe SDK isolation: per-currency clients + typed gateway calls
-  web/                # server-rendered pages (thin views, selectors only)
-  core/               # BaseModel, money helpers, ApplicationError, management commands
+  api/                # DRF exception handler (единый формат ошибок)
+  catalog/            # модель Item, селекторы, админка
+  orders/             # Order/OrderItem/Discount/Tax, селектор итогов, сервис order_create
+  payments/           # сервисы, маппящие модели в объекты Stripe; JSON API (/buy/{id}, ...)
+  integrations/stripe # изоляция Stripe SDK: клиенты по валютам + типизированный gateway
+  web/                # серверные страницы (тонкие вьюхи, только селекторы)
+  core/               # BaseModel, money-хелперы, ApplicationError, management-команды
 templates/, static/   # UI
 ```
 
-### Notes on the Stripe mapping
+### Заметки о маппинге в Stripe
 
-- **Checkout Session for an order** sends real line items and attaches the discount as a Stripe
-  Coupon and the tax as a Stripe Tax Rate, so the Checkout form shows them as separate lines.
-  Created Stripe objects are cached on the models, keyed by currency, percentage and name — a
-  coupon's `percent_off` is immutable on Stripe, and renames are treated the same way, so any
-  edit in the admin mints a fresh coupon/tax rate instead of showing stale values in Checkout.
-- **Payment Intent** has no line items, so the total (discount applied before tax, mirroring
-  Stripe's own order of operations) is computed by `order_totals` and charged as one amount.
-- An order must be single-currency — a Stripe payment happens in one currency against one
-  keypair; the admin and the services both enforce this.
+- **Checkout Session для заказа** отправляет реальные line items и прикрепляет скидку как Stripe
+  Coupon, а налог как Stripe Tax Rate — Checkout-форма показывает их отдельными строками.
+  Созданные объекты Stripe кэшируются на моделях с ключом из валюты, процента и названия:
+  `percent_off` купона в Stripe неизменяем, переименования обрабатываются так же, поэтому любая
+  правка в админке создаёт новый купон/ставку вместо устаревших значений в Checkout.
+- **У Payment Intent нет line items**, поэтому итог (скидка до налога — в том же порядке, что
+  и у Stripe) считается селектором `order_totals` и списывается одной суммой.
+- Заказ строго в одной валюте — платёж Stripe проходит в одной валюте через один кейпар;
+  это проверяют и админка, и сервисы.
